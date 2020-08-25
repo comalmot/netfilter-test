@@ -25,11 +25,6 @@ int dump(unsigned char* buf, int size) {
 	int i;
     unsigned char pkt_host[4096];
     int option = 0;
-    //printf("Dump\n");
-    printf("==========================\n");
-    printf("%s\n\n", buf);
-    printf("==========================\n");
-
     option = check_Method(buf);
 
     switch (option) {
@@ -40,7 +35,6 @@ int dump(unsigned char* buf, int size) {
     }
 
     if(option) {
-        printf("Check Method Pass\n");
         printf("%s\n", pkt_host);
 
         if(!strncmp(pkt_host, URL, strlen(pkt_host))) {
@@ -61,8 +55,6 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 	int ret;
 	unsigned char *pkt;
 	char *Method;
-    char *URI;
-    char *URL;
     int op = 0;
 	ph = nfq_get_msg_packet_hdr(nfa);
 	
@@ -72,12 +64,10 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
 	
 	ret = nfq_get_payload(nfa, &pkt);
 	if (ret >= 0) {
-		//printf("payload_len=%d ", ret);
+		
         pkt += 0 + 20 + 20; // ip tcp ~
 		op = dump(pkt, ret);	
 	}
-	//fputc('\n', stdout);
-	//printf("entering callback\n");
     if(op) {
         printf("DROPPED!\n");
 	    return nfq_set_verdict(qh, id, NF_DROP, 0, NULL);
@@ -98,7 +88,8 @@ int main(int argc, char **argv)
 	char buf[4096] __attribute__ ((aligned));
 
     if(argc != 2) {
-        printf("Usage : ./real <url>\n");
+        printf("Usage : sudo ./netfilter-test <url>\n");
+		exit(0);
     }
 
     strncpy(URL, argv[1], 4095);
@@ -138,7 +129,7 @@ int main(int argc, char **argv)
 
 	for (;;) {
 		if ((rv = recv(fd, buf, sizeof(buf), 0)) >= 0) {
-			//printf("pkt received\n");
+			printf("pkt received\n");
 			nfq_handle_packet(h, buf, rv);
 			continue;
 		}
